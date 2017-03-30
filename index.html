@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="node_modules/knockout/build/output/knockout-latest.js"></script>
+    <script src="format.js"></script>
+</head>
+
+<body>
+
+    <input type="text" data-bind="textInput: value, formatter: money">
+
+
+    <script>
+        function vm() {
+            var self = this;
+
+            self.value = ko.observable();
+        }
+
+        ko.applyBindings(new vm());
+    </script>
+</body>
+
+</html>
