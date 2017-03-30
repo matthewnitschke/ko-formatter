@@ -8,12 +8,12 @@
     <title>Document</title>
 
     <script src="node_modules/knockout/build/output/knockout-latest.js"></script>
-    <script src="format.js"></script>
+    <script src="ko-formatter.js"></script>
 </head>
 
 <body>
 
-    <input type="text" data-bind="textInput: value, formatter: money">
+    <input type="text" data-bind="textInput: value, formatter: KoFormatter.date">
 
 
     <script>
