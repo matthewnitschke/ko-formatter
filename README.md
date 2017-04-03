@@ -35,5 +35,11 @@ ko-formatter is an incredibly easy to use knockout js forced formatter plugin.
 | numbers | ab12c3 | 123 |
 | characters | ab12c3 | 123 |
 | capitalize | this is a test | This Is A Test |
+| creditCardNumber | 1234567890123456 | 1234 5678 9012 3456 |
+| creditCardCVC | a1b2c3e | 123 |
+| creditCardDate | 1212 | 12/12 |
+| bankRoutingNumber | 123t45e67a89 | 123456789 |
+| bankAccountNumber | 123456e78t901e23a45e67 | 12345678901234567 |
+| oneWord | this is some words | this |
 
 
