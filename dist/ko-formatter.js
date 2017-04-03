@@ -1,3 +1,86 @@
+/*!
+    ko-formatter - knockout input auto formatter
+    Author: Matthew Nitschke
+    License: MIT (http://www.opensource.org/licenses/mit-license.php)
+    Version: 1.0.0
+*/
+
+ko.bindingHandlers.formatter = {
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+      var bindings = allBindings();
+      var value;
+
+      if (bindings.textInput){
+        value = bindings.textInput;
+      } else if (bindings.value){
+        value = bindings.value;
+      }
+
+      var formatterObject = valueAccessor(); 
+
+      var format = function(){
+        ko.bindingHandlers.formatter.format(element, value, formatterObject);
+      }
+
+      value.subscribe(format);
+      format(); 
+
+    },
+    format: function(element, valueAccessor, formatterObject){
+      var value = ko.unwrap(valueAccessor);
+
+      function setCaretPosition(ctrl,pos) {
+        if (ctrl.setSelectionRange){
+          ctrl.focus();
+          ctrl.setSelectionRange(pos,pos);
+        }
+        else if (ctrl.createTextRange){
+          var range = ctrl.createTextRange();
+          range.collapse(true);
+          range.moveEnd('character', pos);
+          range.moveStart('character', pos);
+          range.select();
+        }
+      }
+
+      function getPatternCharLength(value, caretPos){
+        if (formatterObject.patternCharacters){
+          var regexMatcher = new RegExp("[" + formatterObject.patternCharacters + "]", 'gi');
+          var patternChars = value.substring(0, caretPos).match(regexMatcher);
+          return patternChars ? patternChars.length : 0;
+        } else {
+          return 0;
+        }
+      }
+
+      var caretPos = element.selectionStart;
+
+      if (!!(value) || formatterObject.allowNull) {
+
+        if (value.length > formatterObject.lengthLimit) {
+          value = value.substring(0, formatterObject.lengthLimit);
+        }
+
+        var patternCharsBeforeFormat = getPatternCharLength(value, caretPos);
+
+        if (formatterObject.preformatter != null) {
+          value = formatterObject.preformatter(value);
+        }
+
+        if (formatterObject.formatterFunction){
+          value = formatterObject.formatterFunction(value);
+        }
+
+        var patternCharsAfterFormat = getPatternCharLength(value, caretPos);
+
+        caretPos = caretPos + (patternCharsAfterFormat - patternCharsBeforeFormat);
+      }
+
+      valueAccessor(value);
+      setCaretPosition(element, caretPos);
+
+    }
+}
 
 ;(function(ns){
     var clearNonNumbers = function(value){
@@ -182,86 +265,3 @@
     }
 
 }(this.Formatter = this.Formatter || {}));
-
-
-ko.bindingHandlers.formatter = {
-    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-      var bindings = allBindings();
-      var value;
-
-      if (bindings.textInput){
-        value = bindings.textInput;
-      } else if (bindings.value){
-        value = bindings.value;
-      }
-
-      var formatterObject = valueAccessor();
-
-      var format = function(){
-        ko.bindingHandlers.formatter.format(element, value, formatterObject);
-      }
-
-      value.subscribe(format);
-      format(value); 
-
-    },
-    format: function(element, valueAccessor, formatterObject){
-      var value = ko.unwrap(valueAccessor);
-
-      function hasValue(value) {
-          return !!(value);
-      }
-
-      function setCaretPosition(ctrl,pos) {
-        if (ctrl.setSelectionRange){
-          ctrl.focus();
-          ctrl.setSelectionRange(pos,pos);
-        }
-        else if (ctrl.createTextRange){
-          var range = ctrl.createTextRange();
-          range.collapse(true);
-          range.moveEnd('character', pos);
-          range.moveStart('character', pos);
-          range.select();
-        }
-      }
-
-      var caretPos = element.selectionStart;
-
-      if (hasValue(value) || formatterObject.allowNull) {
-        if (value.length > formatterObject.lengthLimit) {
-          value = value.substring(0, formatterObject.lengthLimit);
-        }
-
-        function getPatternCharLength(value, caretPos){
-          if (formatterObject.patternCharacters){
-            var regexMatcher = new RegExp("[" + formatterObject.patternCharacters + "]", 'gi');
-            var patternChars = value.substring(0, caretPos).match(regexMatcher);
-            return patternChars ? patternChars.length : 0;
-          } else {
-            return 0;
-          }
-        }
-
-        var patternCharsBeforeFormat = getPatternCharLength(value, caretPos);
-
-        if (formatterObject.preformatter != null) {
-          value = formatterObject.preformatter(value);
-        }
-
-        if (formatterObject.formatterFunction){
-          value = formatterObject.formatterFunction(value);
-
-          var patternCharsAfterFormat = getPatternCharLength(value, caretPos);
-
-          caretPos = caretPos + (patternCharsAfterFormat - patternCharsBeforeFormat);
-
-        }
-      }
-
-      valueAccessor(value);
-      setCaretPosition(element, caretPos);
-
-
-    }
-}

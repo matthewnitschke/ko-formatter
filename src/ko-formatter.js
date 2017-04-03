@@ -1,4 +1,97 @@
+/*!
+    ko-formatter - knockout input auto formatter
+    Author: Matthew Nitschke
+    License: MIT (http://www.opensource.org/licenses/mit-license.php)
+    Version: {{versionNumber}}
+*/
 
+ko.bindingHandlers.formatter = {
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+      var bindings = allBindings();
+      var value;
+
+      // get the observable bound to this input, could be a value binding or a textInput binding
+      if (bindings.textInput){
+        value = bindings.textInput;
+      } else if (bindings.value){
+        value = bindings.value;
+      }
+
+      var formatterObject = valueAccessor(); // get the formatter object passed in with this binding
+
+      var format = function(){
+        // when the observable bound to the input is updated, run the formatter function on this binding
+        ko.bindingHandlers.formatter.format(element, value, formatterObject);
+      }
+
+      value.subscribe(format);
+      format(); // call format on initialization
+
+    },
+    format: function(element, valueAccessor, formatterObject){
+      var value = ko.unwrap(valueAccessor);
+
+      // function that sets the cursor position of the element passed in
+      function setCaretPosition(ctrl,pos) {
+        if (ctrl.setSelectionRange){
+          ctrl.focus();
+          ctrl.setSelectionRange(pos,pos);
+        }
+        else if (ctrl.createTextRange){
+          var range = ctrl.createTextRange();
+          range.collapse(true);
+          range.moveEnd('character', pos);
+          range.moveStart('character', pos);
+          range.select();
+        }
+      }
+
+      // helper method that gets number of patternCharacters before an index
+      // is used for positioning the cursor after the formatting of the input
+      function getPatternCharLength(value, caretPos){
+        if (formatterObject.patternCharacters){
+          var regexMatcher = new RegExp("[" + formatterObject.patternCharacters + "]", 'gi');
+          var patternChars = value.substring(0, caretPos).match(regexMatcher);
+          return patternChars ? patternChars.length : 0;
+        } else {
+          return 0;
+        }
+      }
+
+      // get the cursors initial position
+      var caretPos = element.selectionStart;
+
+      // only format if value is not null or if the formatter object allows null values
+      if (!!(value) || formatterObject.allowNull) {
+
+        // the length limit check, if value is longer than length limit, substring value to fit
+        if (value.length > formatterObject.lengthLimit) {
+          value = value.substring(0, formatterObject.lengthLimit);
+        }
+
+        var patternCharsBeforeFormat = getPatternCharLength(value, caretPos);
+
+        if (formatterObject.preformatter != null) {
+          value = formatterObject.preformatter(value);
+        }
+
+        if (formatterObject.formatterFunction){
+          value = formatterObject.formatterFunction(value);
+        }
+
+        var patternCharsAfterFormat = getPatternCharLength(value, caretPos);
+
+        // corrects the cursor position due to patternCharacters getting added by the formatterFunction
+        caretPos = caretPos + (patternCharsAfterFormat - patternCharsBeforeFormat);
+      }
+
+      valueAccessor(value);
+      setCaretPosition(element, caretPos);
+
+    }
+}
+
+// object for the built in formatters
 ;(function(ns){
     var clearNonNumbers = function(value){
       return value.replace(/\D+/g, '');
@@ -182,86 +275,3 @@
     }
 
 }(this.Formatter = this.Formatter || {}));
-
-
-ko.bindingHandlers.formatter = {
-    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-      var bindings = allBindings();
-      var value;
-
-      if (bindings.textInput){
-        value = bindings.textInput;
-      } else if (bindings.value){
-        value = bindings.value;
-      }
-
-      var formatterObject = valueAccessor();
-
-      var format = function(){
-        ko.bindingHandlers.formatter.format(element, value, formatterObject);
-      }
-
-      value.subscribe(format);
-      format(value); // initially call format
-
-    },
-    format: function(element, valueAccessor, formatterObject){
-      var value = ko.unwrap(valueAccessor);
-
-      function hasValue(value) {
-          return !!(value);
-      }
-
-      function setCaretPosition(ctrl,pos) {
-        if (ctrl.setSelectionRange){
-          ctrl.focus();
-          ctrl.setSelectionRange(pos,pos);
-        }
-        else if (ctrl.createTextRange){
-          var range = ctrl.createTextRange();
-          range.collapse(true);
-          range.moveEnd('character', pos);
-          range.moveStart('character', pos);
-          range.select();
-        }
-      }
-
-      var caretPos = element.selectionStart;
-
-      if (hasValue(value) || formatterObject.allowNull) {
-        if (value.length > formatterObject.lengthLimit) {
-          value = value.substring(0, formatterObject.lengthLimit);
-        }
-
-        function getPatternCharLength(value, caretPos){
-          if (formatterObject.patternCharacters){
-            var regexMatcher = new RegExp("[" + formatterObject.patternCharacters + "]", 'gi');
-            var patternChars = value.substring(0, caretPos).match(regexMatcher);
-            return patternChars ? patternChars.length : 0;
-          } else {
-            return 0;
-          }
-        }
-
-        var patternCharsBeforeFormat = getPatternCharLength(value, caretPos);
-
-        if (formatterObject.preformatter != null) {
-          value = formatterObject.preformatter(value);
-        }
-
-        if (formatterObject.formatterFunction){
-          value = formatterObject.formatterFunction(value);
-
-          var patternCharsAfterFormat = getPatternCharLength(value, caretPos);
-
-          caretPos = caretPos + (patternCharsAfterFormat - patternCharsBeforeFormat);
-
-        }
-      }
-
-      valueAccessor(value);
-      setCaretPosition(element, caretPos);
-
-
-    }
-}
