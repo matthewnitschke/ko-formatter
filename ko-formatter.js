@@ -128,6 +128,59 @@
       }
     }
 
+    ns.creditCardNumber = {
+      formatterFunction: function(value){
+        var retValue = "";
+        for (var i = 0; i < value.length; i ++){
+          if (i == 4 || i == 8 || i == 12 || i == 16){
+            retValue += " ";
+          }
+          retValue += value.charAt(i);
+        }
+        return retValue;
+      },
+      patternCharacters: " ",
+      lengthLimit: 19,
+      preformatter: clearNonNumbers
+    }
+
+    ns.creditCardCVC = {
+      preformatter: clearNonNumbers,
+      lengthLimit: 3
+    }
+
+    ns.creditCardDate = {
+      formatterFunction: function(value){
+        var retValue = "";
+        for(var i = 0; i < value.length; i ++){
+          if (i == 3){
+            retValue += "/"
+          }
+          retValue += value.charAt(i);
+        }
+      },
+      patternCharacters: "/",
+      lengthLimit: 5,
+      preformatter: clearNonNumbers
+    }
+
+    ns.bankRoutingNumber = {
+      preformatter: clearNonNumbers,
+      lengthLimit: 9
+    }
+
+    ns.bankAccountNumber = {
+      preformatter: clearNonNumbers,
+      lengthLimit: 17
+    }
+
+    ns.oneWord = {
+      formatterFunction: function(value){
+        value = value.match(/(.)[^ ]*/)
+        return value ? value[0] : ''
+      }
+    }
+
 }(this.Formatter = this.Formatter || {}));
 
 
