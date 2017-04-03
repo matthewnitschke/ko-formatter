@@ -42,4 +42,17 @@ ko-formatter is an incredibly easy to use knockout js forced formatter plugin.
 | bankAccountNumber | 123456e78t901e23a45e67 | 12345678901234567 |
 | oneWord | this is some words | this |
 
+# Custom Formatters
+You can create your own formatters
 
+```javascript
+Formatter.customFormatter = {
+  formatterFunction: function(value) {
+    // this is where you will take value and change it into what you want the formatted value to be
+  },
+  patternCharacters: "", // this is a string of all the characters you are going to add to the value
+  lengthLimit: 0, // (optional) the length of your formatter
+  preformatter: function(value){}, // (optional) a function that is run before the formatter to clear out unwanted values
+  allowNull: false // (default: false) if true, the formatter will be run even when the input is null
+}
+```
