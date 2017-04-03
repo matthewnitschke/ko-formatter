@@ -17,7 +17,7 @@ ko.bindingHandlers.formatter = {
         value = bindings.value;
       }
 
-      var formatterObject = valueAccessor(); // get the formatter object passed in with this binding
+      var formatterObject = ko.unwrap(valueAccessor); // get the formatter object passed in with this binding
 
       var format = function(){
         // when the observable bound to the input is updated, run the formatter function on this binding

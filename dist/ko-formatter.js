@@ -16,7 +16,7 @@ ko.bindingHandlers.formatter = {
         value = bindings.value;
       }
 
-      var formatterObject = valueAccessor(); 
+      var formatterObject = ko.unwrap(valueAccessor); 
 
       var format = function(){
         ko.bindingHandlers.formatter.format(element, value, formatterObject);
