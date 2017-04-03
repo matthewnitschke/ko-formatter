@@ -15,9 +15,10 @@
 
         return value;
       },
+      patternCharacters: "$,",
       allowNull: false,
       preformatter: function(value){
-        return value.replace(/[^0-9.]/g, ""); // remove everything but numbers and periods
+        return value.replace(/[^0-9.]/g, ""); // remove everything but numbers and decimal points
       },
     }
 
@@ -42,6 +43,7 @@
         }
         return retValue;
       },
+      patternCharacters: "/",
       lengthLimit: 10,
       preformatter: clearNonNumbers
     }
@@ -63,23 +65,20 @@
         }
         return retValue;
       },
+      patternCharacters: "-",
       lengthLimit: 12,
       preformatter: clearNonNumbers
     }
 
     ns.phone = {
-      formatterFunction: function(value, charCounter){
+      formatterFunction: function(value){
         var retValue = "";
         for(var i = 0; i < value.length; i ++){
           if (i == 0){
-            charCounter.inc(retValue.length);
             retValue += "(";
           } else if (i == 3){
-            charCounter.inc(retValue.length);
-            charCounter.inc(retValue.length+1);
-            retValue += ") ";
+            retValue += ")";
           } else if (i == 6){
-            charCounter.inc(retValue.length);
             retValue += "-";
           }
 
@@ -88,18 +87,18 @@
         }
         return retValue;
       },
+      patternCharacters: "() -",
       lengthLimit: 14,
       preformatter: clearNonNumbers
     }
 
     ns.phoneNoAreaCode = {
-      formatterFunction: function(value, charCounter){
+      formatterFunction: function(value){
         var retValue = "";
         for(var i = 0; i < value.length; i ++){
 
           if (i == 3) {
             retValue += "-";
-            charCounter.inc(i);
           }
 
           retValue += value.charAt(i);
@@ -107,26 +106,12 @@
         }
         return retValue;
       },
+      patternCharacters: "-",
       lengthLimit: 8,
       preformatter: clearNonNumbers
     }
 
-    ns.testFormatter = {
-      formatterFunction: function(value, charCounter){
-        var retValue = "";
-        for(var i = 0; i < value.length; i ++){
-          if (i == 1 || i == 3){
-            charCounter.inc(retValue.length);
-            retValue += "-";
-          }
-          retValue += value.charAt(i);
-        }
-        return retValue;
-      },
-      lengthLimit: 6,
-      preformatter: clearNonCharacters
-    }
-}(this.KoFormatter = this.KoFormatter || {}));
+}(this.Formatter = this.Formatter || {}));
 
 
 ko.bindingHandlers.formatter = {
@@ -157,27 +142,6 @@ ko.bindingHandlers.formatter = {
           return !!(value);
       }
 
-      function getRanges(array){
-        var ranges = [], rstart, rend;
-        for (var i = 0; i < array.length; i ++){
-          rstart = array[i];
-          rend = rstart;
-          while(array[i+1] - array[i] == 1){
-            rend = array[i+1];
-            i++;
-          }
-          ranges.push([rstart, rend]);
-        }
-        return ranges;
-      }
-
-      function isWithin(val, range){
-        if (val < range[0] || val > range[1]){
-          return false;
-        }
-        return true;
-      }
-
       function setCaretPosition(ctrl,pos) {
         if (ctrl.setSelectionRange){
           ctrl.focus();
@@ -199,33 +163,29 @@ ko.bindingHandlers.formatter = {
           value = value.substring(0, formatterObject.lengthLimit);
         }
 
-        if (formatterObject.preformatter != null) {
-          value = formatterObject.preformatter(value);
+        function getPatternCharLength(value, caretPos){
+          if (formatterObject.patternCharacters){
+            var regexMatcher = new RegExp("[" + formatterObject.patternCharacters + "]", 'gi');
+            var patternChars = value.substring(0, caretPos).match(regexMatcher);
+            return patternChars ? patternChars.length : 0;
+          } else {
+            return 0;
+          }
         }
 
         if (formatterObject.formatterFunction){
-          var charCounter = {
-            recurrences: [],
-            inc: function(index){
-              this.recurrences.push(index);
-            }
+          var patternCharsBeforeFormat = getPatternCharLength(value, caretPos);
+
+          if (formatterObject.preformatter != null) {
+            value = formatterObject.preformatter(value);
           }
-          value = formatterObject.formatterFunction(value, charCounter);
 
-          recurrenceRanges = getRanges(charCounter.recurrences);
+          value = formatterObject.formatterFunction(value);
 
+          var patternCharsAfterFormat = getPatternCharLength(value, caretPos);
 
+          caretPos = caretPos + (patternCharsAfterFormat - patternCharsBeforeFormat);
 
-          for(var i = 0; i < recurrenceRanges.length ; i ++){
-
-            if (caretPos == recurrenceRanges[i][1] + 1){
-              caretPos += 1;
-              break;
-            } else if (isWithin(caretPos, recurrenceRanges[i])) {
-              caretPos = recurrenceRanges[i][1] + 1;
-              break;
-            }
-          }
         }
       }
 
