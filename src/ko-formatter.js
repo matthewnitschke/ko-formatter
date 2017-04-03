@@ -167,11 +167,7 @@ ko.bindingHandlers.formatter = {
       formatterFunction: function(value){
         var retValue = "";
         for(var i = 0; i < value.length; i ++){
-          if (i == 0){
-            retValue += "(";
-          } else if (i == 3){
-            retValue += ")";
-          } else if (i == 6){
+          if (i == 3 || i == 6){
             retValue += "-";
           }
 
@@ -180,8 +176,8 @@ ko.bindingHandlers.formatter = {
         }
         return retValue;
       },
-      patternCharacters: "() -",
-      lengthLimit: 13,
+      patternCharacters: "-",
+      lengthLimit: 12,
       preformatter: clearNonNumbers
     }
 
