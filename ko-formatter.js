@@ -68,14 +68,18 @@
     }
 
     ns.phone = {
-      formatterFunction: function(value){
+      formatterFunction: function(value, charCounter){
         var retValue = "";
         for(var i = 0; i < value.length; i ++){
           if (i == 0){
+            charCounter.inc(retValue.length);
             retValue += "(";
           } else if (i == 3){
+            charCounter.inc(retValue.length);
+            charCounter.inc(retValue.length+1);
             retValue += ") ";
           } else if (i == 6){
+            charCounter.inc(retValue.length);
             retValue += "-";
           }
 
@@ -88,6 +92,40 @@
       preformatter: clearNonNumbers
     }
 
+    ns.phoneNoAreaCode = {
+      formatterFunction: function(value, charCounter){
+        var retValue = "";
+        for(var i = 0; i < value.length; i ++){
+
+          if (i == 3) {
+            retValue += "-";
+            charCounter.inc(i);
+          }
+
+          retValue += value.charAt(i);
+
+        }
+        return retValue;
+      },
+      lengthLimit: 8,
+      preformatter: clearNonNumbers
+    }
+
+    ns.testFormatter = {
+      formatterFunction: function(value, charCounter){
+        var retValue = "";
+        for(var i = 0; i < value.length; i ++){
+          if (i == 1 || i == 3){
+            charCounter.inc(retValue.length);
+            retValue += "-";
+          }
+          retValue += value.charAt(i);
+        }
+        return retValue;
+      },
+      lengthLimit: 6,
+      preformatter: clearNonCharacters
+    }
 }(this.KoFormatter = this.KoFormatter || {}));
 
 
@@ -119,6 +157,43 @@ ko.bindingHandlers.formatter = {
           return !!(value);
       }
 
+      function getRanges(array){
+        var ranges = [], rstart, rend;
+        for (var i = 0; i < array.length; i ++){
+          rstart = array[i];
+          rend = rstart;
+          while(array[i+1] - array[i] == 1){
+            rend = array[i+1];
+            i++;
+          }
+          ranges.push([rstart, rend]);
+        }
+        return ranges;
+      }
+
+      function isWithin(val, range){
+        if (val < range[0] || val > range[1]){
+          return false;
+        }
+        return true;
+      }
+
+      function setCaretPosition(ctrl,pos) {
+        if (ctrl.setSelectionRange){
+          ctrl.focus();
+          ctrl.setSelectionRange(pos,pos);
+        }
+        else if (ctrl.createTextRange){
+          var range = ctrl.createTextRange();
+          range.collapse(true);
+          range.moveEnd('character', pos);
+          range.moveStart('character', pos);
+          range.select();
+        }
+      }
+
+      var caretPos = element.selectionStart;
+
       if (hasValue(value) || formatterObject.allowNull) {
         if (value.length > formatterObject.lengthLimit) {
           value = value.substring(0, formatterObject.lengthLimit);
@@ -137,14 +212,26 @@ ko.bindingHandlers.formatter = {
           }
           value = formatterObject.formatterFunction(value, charCounter);
 
-          var caretPos = element.selectionStart;
-          var addedChars = charCounter.recurrences;
+          recurrenceRanges = getRanges(charCounter.recurrences);
 
 
+
+          for(var i = 0; i < recurrenceRanges.length ; i ++){
+
+            if (caretPos == recurrenceRanges[i][1] + 1){
+              caretPos += 1;
+              break;
+            } else if (isWithin(caretPos, recurrenceRanges[i])) {
+              caretPos = recurrenceRanges[i][1] + 1;
+              break;
+            }
+          }
         }
-
       }
 
-        valueAccessor(value);
+      valueAccessor(value);
+      setCaretPosition(element, caretPos);
+
+
     }
 }
