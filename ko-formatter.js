@@ -88,7 +88,7 @@
         return retValue;
       },
       patternCharacters: "() -",
-      lengthLimit: 14,
+      lengthLimit: 13,
       preformatter: clearNonNumbers
     }
 
