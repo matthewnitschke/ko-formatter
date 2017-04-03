@@ -5,7 +5,7 @@
     }
 
     var clearNonCharacters = function(value){
-      return value.replace(/\W+/g, '');
+      return value.replace(/[^a-z]/ig, '');
     }
 
     ns.money = {
@@ -111,6 +111,23 @@
       preformatter: clearNonNumbers
     }
 
+    ns.numbers = {
+      preformatter: clearNonNumbers
+    }
+
+    ns.characters = {
+      preformatter: clearNonCharacters
+    }
+
+    ns.capitalize = {
+      formatterFunction: function(value){
+        value = value.replace(/\b(\w)/g, function(m){
+          return m.toUpperCase();
+        });
+        return value;
+      }
+    }
+
 }(this.Formatter = this.Formatter || {}));
 
 
@@ -173,13 +190,13 @@ ko.bindingHandlers.formatter = {
           }
         }
 
+        var patternCharsBeforeFormat = getPatternCharLength(value, caretPos);
+
+        if (formatterObject.preformatter != null) {
+          value = formatterObject.preformatter(value);
+        }
+
         if (formatterObject.formatterFunction){
-          var patternCharsBeforeFormat = getPatternCharLength(value, caretPos);
-
-          if (formatterObject.preformatter != null) {
-            value = formatterObject.preformatter(value);
-          }
-
           value = formatterObject.formatterFunction(value);
 
           var patternCharsAfterFormat = getPatternCharLength(value, caretPos);
