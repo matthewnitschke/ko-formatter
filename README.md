@@ -33,7 +33,7 @@ ko-formatter is an incredibly easy to use knockout js forced formatter plugin.
 | phone | 1234567890 | (123)456-7890 |
 | phoneNoAreaCode | 1234567 | 123-4567 |
 | numbers | ab12c3 | 123 |
-| characters | ab12c3 | 123 |
+| characters | ab12c3 | abc |
 | capitalize | this is a test | This Is A Test |
 | creditCardNumber | 1234567890123456 | 1234 5678 9012 3456 |
 | creditCardCVC | a1b2c3e | 123 |
