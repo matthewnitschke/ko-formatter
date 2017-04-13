@@ -10,9 +10,11 @@ ko-formatter is an incredibly easy to use knockout js forced formatter plugin.
 ```
 
 # Usage
+There are two ways to use ko-formatter, object formatting, and pattern formatting.
 
+## Object Formatting
 ```html
-<input data-bind="textInput: phoneNumber, formatter: ko.formatter.phone">
+<input data-bind="textInput: phoneNumber, formatter: ko.formatter.phone" />
 
 <script>
   ko.applyBindings({
@@ -21,7 +23,19 @@ ko-formatter is an incredibly easy to use knockout js forced formatter plugin.
 </script>
 ```
 
-# Built in Formatters
+## Pattern Formatting
+```html
+<input data-bind="textInput: phoneNumber, formatter: '###-###-####'" />
+
+<script>
+  ko.applyBindings({
+    phoneNumber: ko.observable()
+  })
+</script>
+```
+
+# Object Formatters
+All can be accessed from the `ko.formatter` object
 
 | Formatter Name | User Entered Value | Formatted Value |
 |----------------|--------------------|-----------------|
@@ -42,7 +56,7 @@ ko-formatter is an incredibly easy to use knockout js forced formatter plugin.
 | bankAccountNumber | 123456e78t901e23a45e67 | 12345678901234567 |
 | oneWord | this is some words | this |
 
-# Custom Formatters
+### Custom Formatters
 You can create your own formatters
 
 ```javascript
@@ -56,3 +70,21 @@ Formatter.customFormatter = {
   allowNull: false // (default: false) if true, the formatter will be run even when the input is null
 }
 ```
+
+
+# Pattern Formatters
+Sometimes a formatter doesnt require a complex features and can simply be a pattern. This is when pattern formatters should be used
+
+### Wildcards
+| Wildcard | Property |
+|----------|----------|
+| #        | number |
+| @        | letter |
+| *        | anything |
+
+### Examples
+| Pattern | Function |
+|---------|----------|
+|###-###-####| Phone number |
+|####-##-#### | SSN |
+| @@ | State |
