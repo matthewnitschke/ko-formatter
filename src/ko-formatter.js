@@ -8,6 +8,50 @@
 
 (function(global, undefined) {
 
+  // function that sets the cursor position of the element passed in
+  function setCaretPosition(ctrl,pos) {
+    if (ctrl.setSelectionRange){
+      ctrl.focus();
+      ctrl.setSelectionRange(pos,pos);
+    }
+    else if (ctrl.createTextRange){
+      var range = ctrl.createTextRange();
+      range.collapse(true);
+      range.moveEnd('character', pos);
+      range.moveStart('character', pos);
+      range.select();
+    }
+  }
+
+  var wildcards = [
+    {
+      wildcard: "#",
+      isValid: function(value){
+        if (!isNaN(parseInt(value))){
+          return true;
+        } else {
+          return false;
+        }
+      }
+    },
+    {
+      wildcard: "@",
+      isValid: function(value){
+        if (value.match(/[a-z]/i)){
+          return true;
+        } else {
+          return false;
+        }
+      }
+    },
+    {
+      wildcard: "*",
+      isValid: function(value){
+        return true; // * = everything
+      }
+    }
+  ];
+
   ko.bindingHandlers.formatter = {
       init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
         var bindings = allBindings();
@@ -22,32 +66,99 @@
 
         var formatterObject = bindings.formatter; // get the formatter object passed in with this binding
 
-        var format = function(){
-          // when the observable bound to the input is updated, run the formatter function on this binding
-          ko.bindingHandlers.formatter.format(element, value, formatterObject);
+        var format;
+        // get the correct formatter function, if string we are pattern formatting, if object, we are object formatting
+        if (typeof formatterObject === "string"){
+          format = function(){
+            ko.bindingHandlers.formatter.formatPattern(element, value, formatterObject);
+          }
+        } else {
+          format = function(){
+            ko.bindingHandlers.formatter.format(element, value, formatterObject);
+          }
         }
 
         value.subscribe(format);
         format(); // call format on initialization
+      },
+      formatPattern: function(element, value, pattern){
+        var valueAccessor = value;
+        value = ko.unwrap(value);
+
+        if (value){
+          var caretPos = element.selectionStart;
+
+          var replace = function(remainingString, pattern) {
+            var index = pattern.search(getWildcardRegex()); // finds first wildcard in pattern
+            pattern = pattern.split('');
+            if (index > -1){ // if wildcards was actually found
+              for(var i = 0; i < wildcards.length; i ++){
+                if (wildcards[i].wildcard == pattern[index]){ // find correct wildcard in array
+                  if (wildcards[i].isValid(remainingString.charAt(0))){
+                    pattern[index] = remainingString.charAt(0);
+                  } else {
+                    caretPos--; // because we are making the string shorter, we need to account for the caret pos
+                    if (remainingString.length === 1){
+                      pattern[index] = "";
+                    }
+                  }
+                  remainingString = remainingString.substring(1, remainingString.length);
+                }
+              }
+
+              if (remainingString.length > 0){
+                return replace(remainingString, pattern.join(''));
+              } else {
+                return pattern.splice(0, index + 1).join('');
+              }
+            }
+            return pattern.join('');
+          }
+
+          var stringFormatter = function(value, pattern){
+            if (value){
+              var characters = pattern.replace(getWildcardRegex(), ""); // removes all wild cards
+              value = value.replace(new RegExp("[" + characters + "]", 'gi'), ""); // removes all non wildcard characters in pattern
+              if (value){
+                return replace(value, pattern);
+              }
+            }
+          }
+
+          function getNonWildcardBeforeIndex(index, value, pattern){
+            var valueSub = value.substring(0, index);
+            var patternSub = pattern.substring(0, index);
+            var matchedValues = valueSub.match(getNonWildcardRegex(patternSub));
+            return matchedValues ? matchedValues.length : null;
+          }
+
+          function getNonWildcardRegex(pattern){
+            var nuPattern = pattern.replace(getWildcardRegex(), '');
+            return new RegExp("[" + nuPattern + "]", 'gi');
+          }
+
+          function getWildcardRegex(){
+            var retValue = "";
+            for(var i = 0; i < wildcards.length; i ++){
+              retValue += wildcards[i].wildcard;
+            }
+            return new RegExp("[" + retValue + "]", 'gi');
+          }
+
+          var formattedValue = stringFormatter(value, pattern);
+
+          var nonWildcardsBeforeFormat = getNonWildcardBeforeIndex(caretPos, value, pattern);
+          var nonWildcardsAfterFormat = getNonWildcardBeforeIndex(caretPos, formattedValue, pattern);
+
+          var newCaretPos = caretPos + (nonWildcardsAfterFormat - nonWildcardsBeforeFormat);
+
+          valueAccessor(formattedValue);
+          setCaretPosition(element, newCaretPos);
+        }
 
       },
       format: function(element, valueAccessor, formatterObject){
         var value = ko.unwrap(valueAccessor);
-
-        // function that sets the cursor position of the element passed in
-        function setCaretPosition(ctrl,pos) {
-          if (ctrl.setSelectionRange){
-            ctrl.focus();
-            ctrl.setSelectionRange(pos,pos);
-          }
-          else if (ctrl.createTextRange){
-            var range = ctrl.createTextRange();
-            range.collapse(true);
-            range.moveEnd('character', pos);
-            range.moveStart('character', pos);
-            range.select();
-          }
-        }
 
         // helper method that gets number of patternCharacters before an index
         // is used for positioning the cursor after the formatting of the input
