@@ -12,7 +12,7 @@ ko-formatter is an incredibly easy to use knockout js forced formatter plugin.
 # Usage
 
 ```html
-<input data-bind="textInput: phoneNumber, formatter: Formatter.phone">
+<input data-bind="textInput: phoneNumber, formatter: ko.formatter.phone">
 
 <script>
   ko.applyBindings({
