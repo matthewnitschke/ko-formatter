@@ -56,7 +56,7 @@ All can be accessed from the `ko.formatter` object
 | bankAccountNumber | 123456e78t901e23a45e67 | 12345678901234567 |
 | oneWord | this is some words | this |
 
-## Custom Formatters
+### Custom Formatters
 You can create your own formatters
 
 ```javascript
@@ -75,14 +75,14 @@ Formatter.customFormatter = {
 # Pattern Formatters
 Sometimes a formatter doesnt require a complex features and can simply be a pattern. This is when pattern formatters should be used
 
-## Wildcards
+### Wildcards
 | Wildcard | Property |
 |----------|----------|
 | #        | number |
 | @        | letter |
 | *        | anything |
 
-## Examples
+### Examples
 | Pattern | Function |
 |---------|----------|
 |###-###-####| Phone number |
