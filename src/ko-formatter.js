@@ -205,6 +205,12 @@
       }
   }
 
+  var clearNonNumbers = function(value){
+      return value.replace(/\D+/g, '');
+  }
+  var clearNonCharacters = function(value){
+    return value.replace(/[^a-z]/ig, '');
+  }
   ko.formatter = {
     money: {
       formatterFunction: function(value){
@@ -374,14 +380,6 @@
         return value ? value[0] : ''
       }
     },
-  }
-
-  var clearNonNumbers = function(value){
-    return value.replace(/\D+/g, '');
-  }
-
-  var clearNonCharacters = function(value){
-    return value.replace(/[^a-z]/ig, '');
   }
 
   })(this);
