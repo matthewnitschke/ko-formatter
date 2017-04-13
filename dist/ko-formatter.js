@@ -196,7 +196,30 @@
       }
   }
 
+  var clearNonNumbers = function(value){
+      return value.replace(/\D+/g, '');
+  }
+  var clearNonCharacters = function(value){
+    return value.replace(/[^a-z]/ig, '');
+  }
   ko.formatter = {
+
+    date: "##/##/####",
+
+    zip: "#####",
+
+    ssn: "###-##-####",
+
+    phone: "###-###-####",
+
+    phoneNoAreaCode: "###-####",
+
+    creditCardNumber: "#### #### #### ####",
+    creditCardCVC: "###",
+    creditCardDate: "##/##",
+    bankRoutingNumber: "#########",
+    bankAccountNumber: "#################",
+
     money: {
       formatterFunction: function(value){
         value = value.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
@@ -219,83 +242,6 @@
       preforatter: clearNonCharacters
     },
 
-    date: {
-      formatterFunction: function(value, charCounter){
-        var retValue = "";
-        for(var i = 0; i < value.length; i ++){
-          if (i == 2 || i == 4){
-            retValue += "/";
-            charCounter.inc(i);
-          }
-          retValue += value.charAt(i);
-
-        }
-        return retValue;
-      },
-      patternCharacters: "/",
-      lengthLimit: 10,
-      preformatter: clearNonNumbers
-    },
-
-    zip: {
-      lengthLimit: 5,
-      preformatter: clearNonCharacters
-    },
-
-    ssn: {
-      formatterFunction: function(value){
-        var retValue = "";
-        for(var i = 0; i < value.length; i ++){
-          if (i == 4 || i == 6){
-            retValue += "-";
-          }
-          retValue += value.charAt(i);
-
-        }
-        return retValue;
-      },
-      patternCharacters: "-",
-      lengthLimit: 12,
-      preformatter: clearNonNumbers
-    },
-
-    phone: {
-      formatterFunction: function(value){
-        var retValue = "";
-        for(var i = 0; i < value.length; i ++){
-          if (i == 3 || i == 6){
-            retValue += "-";
-          }
-
-          retValue += value.charAt(i);
-
-        }
-        return retValue;
-      },
-      patternCharacters: "-",
-      lengthLimit: 12,
-      preformatter: clearNonNumbers
-    },
-
-    phoneNoAreaCode: {
-      formatterFunction: function(value){
-        var retValue = "";
-        for(var i = 0; i < value.length; i ++){
-
-          if (i == 3) {
-            retValue += "-";
-          }
-
-          retValue += value.charAt(i);
-
-        }
-        return retValue;
-      },
-      patternCharacters: "-",
-      lengthLimit: 8,
-      preformatter: clearNonNumbers
-    },
-
     numbers: {
       preformatter: clearNonNumbers
     },
@@ -313,66 +259,12 @@
       }
     },
 
-    creditCardNumber: {
-      formatterFunction: function(value){
-        var retValue = "";
-        for (var i = 0; i < value.length; i ++){
-          if (i == 4 || i == 8 || i == 12 || i == 16){
-            retValue += " ";
-          }
-          retValue += value.charAt(i);
-        }
-        return retValue;
-      },
-      patternCharacters: " ",
-      lengthLimit: 19,
-      preformatter: clearNonNumbers
-    },
-
-    creditCardCVC: {
-      preformatter: clearNonNumbers,
-      lengthLimit: 3
-    },
-
-    creditCardDate: {
-      formatterFunction: function(value){
-        var retValue = "";
-        for(var i = 0; i < value.length; i ++){
-          if (i == 3){
-            retValue += "/"
-          }
-          retValue += value.charAt(i);
-        }
-      },
-      patternCharacters: "/",
-      lengthLimit: 5,
-      preformatter: clearNonNumbers
-    },
-
-    bankRoutingNumber: {
-      preformatter: clearNonNumbers,
-      lengthLimit: 9
-    },
-
-    bankAccountNumber: {
-      preformatter: clearNonNumbers,
-      lengthLimit: 17
-    },
-
     oneWord: {
       formatterFunction: function(value){
         value = value.match(/(.)[^ ]*/)
         return value ? value[0] : ''
       }
     },
-  }
-
-  var clearNonNumbers = function(value){
-    return value.replace(/\D+/g, '');
-  }
-
-  var clearNonCharacters = function(value){
-    return value.replace(/[^a-z]/ig, '');
   }
 
   })(this);
