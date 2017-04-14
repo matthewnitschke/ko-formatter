@@ -37,24 +37,24 @@ There are two ways to use ko-formatter, object formatting, and pattern formattin
 # Object Formatters
 All can be accessed from the `ko.formatter` object
 
-| Formatter Name | User Entered Value | Formatted Value |
-|----------------|--------------------|-----------------|
-| money | 12000 | $12,000 |
-| state | mt | MT |
-| date | 12122012 | 12/12/2012 |
-| zip | a1e234d5 | 12345 |
-| ssn | 1234567890 | 1234-56-7890 |
-| phone | 1234567890 | 123-456-7890 |
-| phoneNoAreaCode | 1234567 | 123-4567 |
-| numbers | ab12c3 | 123 |
-| characters | ab12c3 | abc |
-| capitalize | this is a test | This Is A Test |
-| creditCardNumber | 1234567890123456 | 1234 5678 9012 3456 |
-| creditCardCVC | a1b2c3e | 123 |
-| creditCardDate | 1212 | 12/12 |
-| bankRoutingNumber | 123t45e67a89 | 123456789 |
-| bankAccountNumber | 123456e78t901e23a45e67 | 12345678901234567 |
-| oneWord | this is some words | this |
+| Formatter Name | User Entered Value | Formatted Value | Formatter Type |
+|----------------|--------------------|-----------------|----------------|
+| money | 12000 | $12,000 | object |
+| state | mt | MT | object |
+| date | 12122012 | 12/12/2012 | pattern |
+| zip | a1e234d5 | 12345 | pattern |
+| ssn | 1234567890 | 1234-56-7890 | pattern |
+| phone | 1234567890 | 123-456-7890 | pattern |
+| phoneNoAreaCode | 1234567 | 123-4567 | pattern |
+| numbers | ab12c3 | 123 | object |
+| characters | ab12c3 | abc | object |
+| capitalize | this is a test | This Is A Test | object |
+| creditCardNumber | 1234567890123456 | 1234 5678 9012 3456 | pattern |
+| creditCardCVC | a1b2c3e | 123 | pattern |
+| creditCardDate | 1212 | 12/12 | pattern |
+| bankRoutingNumber | 123t45e67a89 | 123456789 | pattern |
+| bankAccountNumber | 123456e78t901e23a45e67 | 12345678901234567 | pattern |
+| oneWord | this is some words | this | object |
 
 ### Custom Formatters
 You can create your own formatters
