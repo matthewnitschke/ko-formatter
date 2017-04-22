@@ -214,15 +214,10 @@
   ko.formatter = {
 
     date: "##/##/####",
-
     zip: "#####",
-
     ssn: "###-##-####",
-
     phone: "###-###-####",
-
     phoneNoAreaCode: "###-####",
-
     creditCardNumber: "#### #### #### ####",
     creditCardCVC: "###",
     creditCardDate: "##/##",
