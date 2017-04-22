@@ -205,15 +205,10 @@
   ko.formatter = {
 
     date: "##/##/####",
-
     zip: "#####",
-
     ssn: "###-##-####",
-
     phone: "###-###-####",
-
     phoneNoAreaCode: "###-####",
-
     creditCardNumber: "#### #### #### ####",
     creditCardCVC: "###",
     creditCardDate: "##/##",
@@ -221,11 +216,17 @@
     bankAccountNumber: "#################",
 
     money: {
-      formatterFunction: function(value){
-        value = value.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-        value = "$" + value;
+      formatterFunction: function (value) {
+          value = value.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
 
-        return value;
+          var cents = value.match(/(\..{2})/);
+          if (cents) {
+              value = value.replace(/(\..{2}).+/g, cents[0]);
+          }
+
+          value = "$" + value;
+
+          return value;
       },
       patternCharacters: "$,",
       allowNull: false,
