@@ -27,21 +27,13 @@
     {
       wildcard: "#",
       isValid: function(value){
-        if (!isNaN(parseInt(value))){
-          return true;
-        } else {
-          return false;
-        }
+        return !isNaN(parseInt(value));
       }
     },
     {
       wildcard: "@",
       isValid: function(value){
-        if (value.match(/[a-z]/i)){
-          return true;
-        } else {
-          return false;
-        }
+        return value.match(/[a-z]/i);
       }
     },
     {
@@ -54,10 +46,10 @@
 
   ko.bindingHandlers.formatter = {
       init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-        var bindings = allBindings();
-        var value;
 
         // get the observable bound to this input, could be a value binding or a textInput binding
+        var bindings = allBindings();
+        var value;
         if (bindings.textInput){
           value = bindings.textInput;
         } else if (bindings.value){
@@ -66,9 +58,10 @@
 
         var formatterObject = bindings.formatter; // get the formatter object passed in with this binding
 
-        var format;
+
         // get the correct formatter function, if string we are pattern formatting, if object, we are object formatting
-        if (typeof formatterObject === "string"){
+        var format;
+        if (typeof formatterObject === "string") {
           format = function(){
             ko.bindingHandlers.formatter.formatPattern(element, value, formatterObject);
           }
@@ -205,12 +198,14 @@
       }
   }
 
+  // preformatters for ko.formatter objects
   var clearNonNumbers = function(value){
       return value.replace(/\D+/g, '');
   }
   var clearNonCharacters = function(value){
     return value.replace(/[^a-z]/ig, '');
   }
+
   ko.formatter = {
 
     date: "##/##/####",
