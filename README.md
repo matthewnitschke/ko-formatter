@@ -10,7 +10,7 @@ ko-formatter is an incredibly easy to use knockout js forced formatter plugin.
 ```
 
 # Usage
-There are two ways to use ko-formatter, object formatting, and pattern formatting.
+There are two ways to use ko-formatter: object formatting, and pattern formatting.
 
 ## Object Formatting
 ```html
