@@ -47,31 +47,20 @@
   ko.bindingHandlers.formatter = {
       init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
 
-        // get the observable bound to this input, could be a value binding or a textInput binding
-        var bindings = allBindings();
-        var value;
-        if (bindings.textInput){
-          value = bindings.textInput;
-        } else if (bindings.value){
-          value = bindings.value;
-        }
-
-        var formatterObject = bindings.formatter; // get the formatter object passed in with this binding
-
-
+        var formatterObject = valueAccessor(); // get the formatter object passed in with this binding
         // get the correct formatter function, if string we are pattern formatting, if object, we are object formatting
         var format;
         if (typeof formatterObject === "string") {
           format = function(){
-            ko.bindingHandlers.formatter.formatPattern(element, value, formatterObject);
+            ko.bindingHandlers.formatter.formatPattern(element, element.value, formatterObject);
           }
         } else {
           format = function(){
-            ko.bindingHandlers.formatter.format(element, value, formatterObject);
+            ko.bindingHandlers.formatter.format(element, element.value, formatterObject);
           }
         }
 
-        value.subscribe(format);
+        element.addEventListener("keyup", format);
         format(); // call format on initialization
       },
       formatPattern: function(element, value, pattern){
@@ -145,7 +134,7 @@
 
           var newCaretPos = caretPos + (nonWildcardsAfterFormat - nonWildcardsBeforeFormat);
 
-          valueAccessor(formattedValue);
+          element.value = formattedValue;
           setCaretPosition(element, newCaretPos);
         }
 
