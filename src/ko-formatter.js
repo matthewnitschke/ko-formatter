@@ -60,7 +60,7 @@
           }
         }
 
-        element.addEventListener("keyup", format);
+        element.addEventListener("input", format);
         format(); // call format on initialization
       },
       formatPattern: function(element, value, pattern){
@@ -68,7 +68,7 @@
         value = ko.unwrap(value);
 
         if (value){
-          var caretPos = element.selectionStart;
+          var caretPos = element.selectionEnd;
 
           var replace = function(remainingString, pattern) {
             var index = pattern.search(getWildcardRegex()); // finds first wildcard in pattern
@@ -135,7 +135,9 @@
           var newCaretPos = caretPos + (nonWildcardsAfterFormat - nonWildcardsBeforeFormat);
 
           element.value = formattedValue;
-          setCaretPosition(element, newCaretPos);
+          setTimeout(function(){
+              setCaretPosition(element, newCaretPos);
+          }, 0);
         }
 
       },
@@ -155,7 +157,7 @@
         }
 
         // get the cursors initial position
-        var caretPos = element.selectionStart;
+        var caretPos = element.selectionEnd;
 
         // only format if value is not null or if the formatter object allows null values
         if (!!(value) || formatterObject.allowNull) {
@@ -181,8 +183,10 @@
           caretPos = caretPos + (patternCharsAfterFormat - patternCharsBeforeFormat);
         }
 
-        valueAccessor(value);
-        setCaretPosition(element, caretPos);
+        element.value = value;
+        setTimeout(function(){
+            setCaretPosition(element, caretPos);
+        }, 0);
 
       }
   }
