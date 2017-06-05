@@ -47,31 +47,20 @@
   ko.bindingHandlers.formatter = {
       init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
 
-        // get the observable bound to this input, could be a value binding or a textInput binding
-        var bindings = allBindings();
-        var value;
-        if (bindings.textInput){
-          value = bindings.textInput;
-        } else if (bindings.value){
-          value = bindings.value;
-        }
-
-        var formatterObject = bindings.formatter; // get the formatter object passed in with this binding
-
-
+        var formatterObject = valueAccessor(); // get the formatter object passed in with this binding
         // get the correct formatter function, if string we are pattern formatting, if object, we are object formatting
         var format;
         if (typeof formatterObject === "string") {
           format = function(){
-            ko.bindingHandlers.formatter.formatPattern(element, value, formatterObject);
+            ko.bindingHandlers.formatter.formatPattern(element, element.value, formatterObject);
           }
         } else {
           format = function(){
-            ko.bindingHandlers.formatter.format(element, value, formatterObject);
+            ko.bindingHandlers.formatter.format(element, element.value, formatterObject);
           }
         }
 
-        value.subscribe(format);
+        element.addEventListener("input", format);
         format(); // call format on initialization
       },
       formatPattern: function(element, value, pattern){
@@ -79,7 +68,7 @@
         value = ko.unwrap(value);
 
         if (value){
-          var caretPos = element.selectionStart;
+          var caretPos = element.selectionEnd;
 
           var replace = function(remainingString, pattern) {
             var index = pattern.search(getWildcardRegex()); // finds first wildcard in pattern
@@ -145,8 +134,10 @@
 
           var newCaretPos = caretPos + (nonWildcardsAfterFormat - nonWildcardsBeforeFormat);
 
-          valueAccessor(formattedValue);
-          setCaretPosition(element, newCaretPos);
+          element.value = formattedValue;
+          setTimeout(function(){
+              setCaretPosition(element, newCaretPos);
+          }, 0);
         }
 
       },
@@ -166,7 +157,7 @@
         }
 
         // get the cursors initial position
-        var caretPos = element.selectionStart;
+        var caretPos = element.selectionEnd;
 
         // only format if value is not null or if the formatter object allows null values
         if (!!(value) || formatterObject.allowNull) {
@@ -192,8 +183,10 @@
           caretPos = caretPos + (patternCharsAfterFormat - patternCharsBeforeFormat);
         }
 
-        valueAccessor(value);
-        setCaretPosition(element, caretPos);
+        element.value = value;
+        setTimeout(function(){
+            setCaretPosition(element, caretPos);
+        }, 0);
 
       }
   }

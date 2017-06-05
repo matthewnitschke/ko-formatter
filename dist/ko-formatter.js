@@ -26,21 +26,13 @@
     {
       wildcard: "#",
       isValid: function(value){
-        if (!isNaN(parseInt(value))){
-          return true;
-        } else {
-          return false;
-        }
+        return !isNaN(parseInt(value));
       }
     },
     {
       wildcard: "@",
       isValid: function(value){
-        if (value.match(/[a-z]/i)){
-          return true;
-        } else {
-          return false;
-        }
+        return value.match(/[a-z]/i);
       }
     },
     {
@@ -53,29 +45,20 @@
 
   ko.bindingHandlers.formatter = {
       init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-        var bindings = allBindings();
-        var value;
 
-        if (bindings.textInput){
-          value = bindings.textInput;
-        } else if (bindings.value){
-          value = bindings.value;
-        }
-
-        var formatterObject = bindings.formatter; 
-
+        var formatterObject = valueAccessor(); 
         var format;
-        if (typeof formatterObject === "string"){
+        if (typeof formatterObject === "string") {
           format = function(){
-            ko.bindingHandlers.formatter.formatPattern(element, value, formatterObject);
+            ko.bindingHandlers.formatter.formatPattern(element, element.value, formatterObject);
           }
         } else {
           format = function(){
-            ko.bindingHandlers.formatter.format(element, value, formatterObject);
+            ko.bindingHandlers.formatter.format(element, element.value, formatterObject);
           }
         }
 
-        value.subscribe(format);
+        element.addEventListener("input", format);
         format(); 
       },
       formatPattern: function(element, value, pattern){
@@ -83,7 +66,7 @@
         value = ko.unwrap(value);
 
         if (value){
-          var caretPos = element.selectionStart;
+          var caretPos = element.selectionEnd;
 
           var replace = function(remainingString, pattern) {
             var index = pattern.search(getWildcardRegex()); 
@@ -149,8 +132,10 @@
 
           var newCaretPos = caretPos + (nonWildcardsAfterFormat - nonWildcardsBeforeFormat);
 
-          valueAccessor(formattedValue);
-          setCaretPosition(element, newCaretPos);
+          element.value = formattedValue;
+          setTimeout(function(){
+              setCaretPosition(element, newCaretPos);
+          }, 0);
         }
 
       },
@@ -167,7 +152,7 @@
           }
         }
 
-        var caretPos = element.selectionStart;
+        var caretPos = element.selectionEnd;
 
         if (!!(value) || formatterObject.allowNull) {
 
@@ -190,8 +175,10 @@
           caretPos = caretPos + (patternCharsAfterFormat - patternCharsBeforeFormat);
         }
 
-        valueAccessor(value);
-        setCaretPosition(element, caretPos);
+        element.value = value;
+        setTimeout(function(){
+            setCaretPosition(element, caretPos);
+        }, 0);
 
       }
   }
@@ -202,6 +189,7 @@
   var clearNonCharacters = function(value){
     return value.replace(/[^a-z]/ig, '');
   }
+
   ko.formatter = {
 
     date: "##/##/####",
