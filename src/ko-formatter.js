@@ -2,13 +2,12 @@
     ko-formatter - knockout input auto formatter
     Author: Matthew Nitschke
     License: MIT (http://www.opensource.org/licenses/mit-license.php)
-    Version: {{versionNumber}}
+    Version: 1.0.0
 */
 
 
 (function(global, undefined) {
 
-  // function that sets the cursor position of the element passed in
   function setCaretPosition(ctrl,pos) {
     if (ctrl.setSelectionRange){
       ctrl.focus();
@@ -39,7 +38,7 @@
     {
       wildcard: "*",
       isValid: function(value){
-        return true; // * = everything
+        return true;
       }
     }
   ];
@@ -47,21 +46,31 @@
   ko.bindingHandlers.formatter = {
       init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
 
-        var formatterObject = valueAccessor(); // get the formatter object passed in with this binding
-        // get the correct formatter function, if string we are pattern formatting, if object, we are object formatting
+        var bindings = allBindings();
+        var value;
+        if (bindings.textInput){
+          value = bindings.textInput;
+        } else if (bindings.value){
+          value = bindings.value;
+        }
+
+        var formatterObject = valueAccessor();
+
         var format;
         if (typeof formatterObject === "string") {
           format = function(){
-            ko.bindingHandlers.formatter.formatPattern(element, element.value, formatterObject);
+            ko.bindingHandlers.formatter.formatPattern(element, value, formatterObject);
           }
         } else {
           format = function(){
-            ko.bindingHandlers.formatter.format(element, element.value, formatterObject);
+            ko.bindingHandlers.formatter.format(element, value, formatterObject);
           }
         }
 
-        element.addEventListener("input", format);
-        format(); // call format on initialization
+        value.formattingSubscription = value.subscribe(format);
+        value.formatterFunction = format;
+
+        format();
       },
       formatPattern: function(element, value, pattern){
         var valueAccessor = value;
@@ -71,15 +80,15 @@
           var caretPos = element.selectionEnd;
 
           var replace = function(remainingString, pattern) {
-            var index = pattern.search(getWildcardRegex()); // finds first wildcard in pattern
+            var index = pattern.search(getWildcardRegex());
             pattern = pattern.split('');
-            if (index > -1){ // if wildcards was actually found
+            if (index > -1){
               for(var i = 0; i < wildcards.length; i ++){
-                if (wildcards[i].wildcard == pattern[index]){ // find correct wildcard in array
+                if (wildcards[i].wildcard == pattern[index]){
                   if (wildcards[i].isValid(remainingString.charAt(0))){
                     pattern[index] = remainingString.charAt(0);
                   } else {
-                    caretPos--; // because we are making the string shorter, we need to account for the caret pos
+                    caretPos--;
                     if (remainingString.length === 1){
                       pattern[index] = "";
                     }
@@ -99,8 +108,8 @@
 
           var stringFormatter = function(value, pattern){
             if (value){
-              var characters = pattern.replace(getWildcardRegex(), ""); // removes all wild cards
-              value = value.replace(new RegExp("[" + characters + "]", 'gi'), ""); // removes all non wildcard characters in pattern
+              var characters = pattern.replace(getWildcardRegex(), "");
+              value = value.replace(new RegExp("[" + characters + "]", 'gi'), "");
               if (value){
                 return replace(value, pattern);
               }
@@ -134,7 +143,21 @@
 
           var newCaretPos = caretPos + (nonWildcardsAfterFormat - nonWildcardsBeforeFormat);
 
-          element.value = formattedValue;
+          var didFormatFormatAnything = valueAccessor() != formattedValue;
+          var formattingSubscriptionTemp;
+          if (didFormatFormatAnything){
+            // unsubscribe from formatter
+            formattingSubscriptionTemp = valueAccessor.formattingSubscription;
+            valueAccessor.formattingSubscription.dispose();
+          }
+
+          valueAccessor(formattedValue);
+
+          if (didFormatFormatAnything){
+              // resubscribe to formatter
+              valueAccessor.formattingSubscription = valueAccessor.subscribe(valueAccessor.formatterFunction);
+          }
+
           setTimeout(function(){
               setCaretPosition(element, newCaretPos);
           }, 0);
@@ -144,8 +167,6 @@
       format: function(element, valueAccessor, formatterObject){
         var value = ko.unwrap(valueAccessor);
 
-        // helper method that gets number of patternCharacters before an index
-        // is used for positioning the cursor after the formatting of the input
         function getPatternCharLength(value, caretPos){
           if (formatterObject.patternCharacters){
             var regexMatcher = new RegExp("[" + formatterObject.patternCharacters + "]", 'gi');
@@ -156,13 +177,10 @@
           }
         }
 
-        // get the cursors initial position
         var caretPos = element.selectionEnd;
 
-        // only format if value is not null or if the formatter object allows null values
         if (!!(value) || formatterObject.allowNull) {
 
-          // the length limit check, if value is longer than length limit, substring value to fit
           if (value.length > formatterObject.lengthLimit) {
             value = value.substring(0, formatterObject.lengthLimit);
           }
@@ -179,7 +197,6 @@
 
           var patternCharsAfterFormat = getPatternCharLength(value, caretPos);
 
-          // corrects the cursor position due to patternCharacters getting added by the formatterFunction
           caretPos = caretPos + (patternCharsAfterFormat - patternCharsBeforeFormat);
         }
 
@@ -191,7 +208,6 @@
       }
   }
 
-  // preformatters for ko.formatter objects
   var clearNonNumbers = function(value){
       return value.replace(/\D+/g, '');
   }
@@ -216,7 +232,6 @@
       formatterFunction: function (value) {
           value = value.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
 
-          // if cents exsist, only allow two digits after '.'
           var cents = value.match(/(\..{2})/);
           if (cents) {
               value = value.replace(/(\..{2}).+/g, cents[0]);
@@ -229,7 +244,7 @@
       patternCharacters: "$,",
       allowNull: false,
       preformatter: function(value){
-        return value.replace(/[^0-9.]/g, ""); // remove everything but numbers and decimal points
+        return value.replace(/[^0-9.]/g, "");
       },
     },
 
